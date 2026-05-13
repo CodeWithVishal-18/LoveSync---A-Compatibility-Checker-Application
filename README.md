@@ -76,8 +76,7 @@ The app also generates a romantic compatibility message and allows users to **do
 
 - Add animations and transitions  
 - Add relationship tips based on score  
-- Save compatibility history  
-- Add dark mode  
+- Save compatibility history   
 - Improve compatibility algorithm  
 
 ---
