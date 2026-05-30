@@ -78,6 +78,7 @@ The app also generates a romantic compatibility message and allows users to **do
 - Add relationship tips based on score  
 - Save compatibility history   
 - Improve compatibility algorithm  
+- Add Share option so that they can share the card online
 
 ---
 
