@@ -67,7 +67,6 @@ The app also generates a romantic compatibility message and allows users to **do
 - Custom Hooks  
 - Conditional Rendering  
 - State Passing using React Router  
-- Form Validation  
 - DOM Screenshot Generation using `html2canvas`  
 
 ---
