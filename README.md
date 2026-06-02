@@ -56,7 +56,7 @@ The app also generates a romantic compatibility message and allows users to **do
 
 3️⃣ A final compatibility score is generated  
 4️⃣ A romantic compatibility message is displayed  
-5️⃣ Users can download the compatibility result card as an image  
+5️⃣ Users can download the compatibility result card as an image and also share that image
 
 ---
 
