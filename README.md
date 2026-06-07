@@ -16,7 +16,7 @@ Users can enter details of two people and discover their **love compatibility sc
 - 📅 Date of birth matching
 - ♈ Zodiac compatibility
 
-The app also generates a romantic compatibility message and allows users to **download their compatibility card as an image** and share it with their partner.
+The app also generates a romantic compatibility message and allows users to **download their compatibility card as an image** and also share it with their partner.
 
 ---
 
