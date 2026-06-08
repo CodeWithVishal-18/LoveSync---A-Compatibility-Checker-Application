@@ -27,7 +27,7 @@ The app also generates a romantic compatibility message and allows users to **do
 - ❤️ Name matching system
 - 📅 DOB compatibility logic
 - 🔮 Zodiac compatibility messages
-- 📥 Download compatibility card as image
+- 📥 Download compatibility card as image ans also share it with your partner
 - ⚡ Fast navigation using React Router
 - 🎯 Fully responsive UI using Bootstrap
 - 📝 Form validation with React Hook Form
