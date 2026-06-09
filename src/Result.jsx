@@ -13,19 +13,19 @@ let Result = memo(() => {
     let [zodiacResult, setZodiacResult] = useState(null)
     let [loading, setLoading] = useState(true)
 
-    const downloadCard = async () => {
-        const card = document.getElementById("love-card");
+    let downloadCard = async () => {
+        let card = document.getElementById("love-card");
 
         if (!card) return;
 
-        const canvas = await html2canvas(card, {
+        let canvas = await html2canvas(card, {
             scale: 2,
             useCORS: true
         })
 
-        const image = canvas.toDataURL("image/png");
+        let image = canvas.toDataURL("image/png");
 
-        const link = document.createElement("a");
+        let link = document.createElement("a");
         link.href = image;
         link.download = "love-compatibility.png";
         link.click();
@@ -69,7 +69,7 @@ let Result = memo(() => {
     let dobScore = getDobMatchScore(state.p1Dob, state.p2Dob);
     let baseScore = Math.round(nameScore * 0.3 + dobScore * 0.2 + zodiacResult.score * 0.5)
     function addRandomFluctuation(score) {
-        const randomOffset = Math.floor(Math.random() * 11) - 5;
+        let randomOffset = Math.floor(Math.random() * 11) - 5;
         let final = score + randomOffset;
         if (final > 100) final = 100;
         if (final < 0) final = 0;
