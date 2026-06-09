@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { memo, useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom';
 import { getZodiacSign } from './hooks/useZodiac';
 import { getCompatibility } from './hooks/compatibility';
@@ -6,7 +6,7 @@ import { getNameMatchScore } from './hooks/nameMatch';
 import { getDobMatchScore } from './hooks/dobMatch';
 import html2canvas from 'html2canvas';
 
-export default function Result() {
+let Result = memo(() => {
     let { state } = useLocation()
     let [zodiac1, setZodiac1] = useState("")
     let [zodiac2, setZodiac2] = useState("")
@@ -106,39 +106,41 @@ export default function Result() {
 
                 </div>
                 <div id="love-card" className='result-card'>
-                <p className='display-6 fw-semibold' style={{color: "#4c0519"}}>💖 LoveSync 💖</p>
-                <h1 className="text-danger">{finalScore}%</h1>
-                <p className="fw-semibold mt-2 result-message">{finalMessage}</p>
-                <p className="text-muted mb-0">Overall Compatibility</p>
-                <hr className='mt-1' />
-                <div className="row">
-                    <div className="col-md-4">
-                        <h5 className='result-names'>{state.p1Name}</h5>
-                        <p className='result-meta'>{zodiacIcons[zodiac1]}{zodiac1}</p>
+                    <p className='display-6 fw-semibold' style={{ color: "#4c0519" }}>💖 LoveSync 💖</p>
+                    <h1 className="text-danger">{finalScore}%</h1>
+                    <p className="fw-semibold mt-2 result-message">{finalMessage}</p>
+                    <p className="text-muted mb-0">Overall Compatibility</p>
+                    <hr className='mt-1' />
+                    <div className="row">
+                        <div className="col-md-4">
+                            <h5 className='result-names'>{state.p1Name}</h5>
+                            <p className='result-meta'>{zodiacIcons[zodiac1]}{zodiac1}</p>
+                        </div>
+                        <div className="col-md-4 display-4">💕</div>
+                        <div className="col-md-4 ">
+                            <h5 className='result-names'>{state.p2Name}</h5>
+                            <p className='result-meta'>{zodiacIcons[zodiac2]}{zodiac2}</p>
+                        </div>
                     </div>
-                    <div className="col-md-4 display-4">💕</div>
-                    <div className="col-md-4 ">
-                        <h5 className='result-names'>{state.p2Name}</h5>
-                        <p className='result-meta'>{zodiacIcons[zodiac2]}{zodiac2}</p>
+
+                    <div className="alert alert-warning mt-3">
+                        <h5>🔮 Zodiac Compatibility</h5>
+                        <p className="mb-0 result-message">{zodiacResult.message}</p>
                     </div>
-                </div>
 
-                <div className="alert alert-warning mt-3">
-                    <h5>🔮 Zodiac Compatibility</h5>
-                    <p className="mb-0 result-message">{zodiacResult.message}</p>
-                </div>
-
-                <div className="d-flex justify-content-evenly mt-2">
-                    <p className='result-meta'>❤️ Name Match: <strong>{nameScore}%</strong></p>
-                    <p className='result-meta'>📅 DOB Match: <strong>{dobScore}%</strong></p>
-                    <p className='result-meta'>♈ Zodiac Match: <strong>{zodiacResult.score}%</strong></p>
-                </div>
-                <small className="mt-3 d-block opacity-75">
-                    ✨ A little magic, a little destiny
-                </small>
+                    <div className="d-flex justify-content-evenly mt-2">
+                        <p className='result-meta'>❤️ Name Match: <strong>{nameScore}%</strong></p>
+                        <p className='result-meta'>📅 DOB Match: <strong>{dobScore}%</strong></p>
+                        <p className='result-meta'>♈ Zodiac Match: <strong>{zodiacResult.score}%</strong></p>
+                    </div>
+                    <small className="mt-3 d-block opacity-75">
+                        ✨ A little magic, a little destiny
+                    </small>
                 </div>
                 <Link to="/" className="btn btn-outline-danger mt-3 mx-auto w-50">Try Again</Link>
             </div>
         </div>
     )
-}
+})
+
+export default Result;
