@@ -20,7 +20,6 @@ It provides a clean UI and smooth experience for users to explore relationship c
 * 📅 Date of Birth input support
 * ⚡ Fast navigation using React Router
 * 🎯 Clean and responsive UI using Bootstrap
-* ❗ Form validation using React Hook Form
 
 ---
 
