@@ -58,7 +58,6 @@ let Result = memo(() => {
             setZodiacResult(result)
             setLoading(false)
         }
-
         calculate()
     }, [state])
 
