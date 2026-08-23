@@ -35,11 +35,9 @@ let Home = memo(() => {
                             <option value="Female">Female</option>
                         </select>
                     </div>
-
                     <hr />
                     <div className="mb-4">
                         <h5 className="fw-semibold mb-2">💑 Partner Details</h5>
-
                         <p className='fst-italic fw-normal text-light mb-1 ms-4' style={{ fontSize: "0.9em" }}>Name, DOB(Date of birth)</p>
                         <input {...register("p2Name", { required: { value: true, message: "Name is required" } })} placeholder="Partner Name" className="form-control mb-1" />
                         <div className="form-text text-danger fst-italic">
