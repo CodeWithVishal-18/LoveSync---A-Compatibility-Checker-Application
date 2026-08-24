@@ -45,14 +45,12 @@ let Home = memo(() => {
                         </div>
                         <input type="date" {...register("p2Dob", { required: { value: true, message: "DOB is required" } })} className="form-control mt-2 mb-1" />
                         <div className="form-text text-danger fst-italic">{formState.errors?.p2Dob?.message}</div>
-
                         <select {...register("p2Gender")} className="form-select mt-2">
                             <option value="">Select Gender</option>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
                         </select>
                     </div>
-
                     <div className="d-grid">
                         <button className="btn btn-danger btn-lg">💖 Check Compatibility</button>
                     </div>
