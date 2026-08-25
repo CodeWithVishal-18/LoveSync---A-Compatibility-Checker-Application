@@ -23,7 +23,6 @@ let Home = memo(() => {
                         <p className='fst-italic fw-normal text-light mb-1 ms-4' style={{ fontSize: "0.9em" }}>Name, DOB(Date of birth)</p>
                         <input {...register("p1Name", { required: { value: true, message: "Name is required" } })} placeholder="Your Name" className="form-control mb-1" />
                         <div className="form-text text-danger fst-italic">{formState.errors?.p1Name?.message}</div>
-
                         <input type="date" {...register("p1Dob", { required: { value: true, message: "DOB is required" } })} className="form-control mt-2 mb-1" />
                         <div className="form-text text-danger fst-italic">{formState.errors?.p1Dob?.message}</div>
 

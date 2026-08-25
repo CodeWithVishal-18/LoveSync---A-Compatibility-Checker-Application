@@ -60,10 +60,8 @@ let Result = memo(() => {
         }
         calculate()
     }, [state])
-
     if (!state) { return <p className="text-center mt-5">Please go back and fill the form.</p> }
     if (loading || !zodiacResult) { return <p className="text-center mt-5">Calculating compatibility… ❤️</p> }
-
     let nameScore = getNameMatchScore(state.p1Name, state.p2Name);
     let dobScore = getDobMatchScore(state.p1Dob, state.p2Dob);
     let baseScore = Math.round(nameScore * 0.3 + dobScore * 0.2 + zodiacResult.score * 0.5)
