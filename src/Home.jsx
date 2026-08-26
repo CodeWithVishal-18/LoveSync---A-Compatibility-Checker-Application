@@ -5,11 +5,9 @@ import { useNavigate } from 'react-router-dom';
 let Home = memo(() => {
     let { register, handleSubmit, formState } = useForm();
     let navigate = useNavigate();
-
     let onSubmit = (data) => {
         navigate("/result", { state: data });
     }
-
     return (
         <div className="container mt-5 d-flex justify-content-center">
             <div className="card shadow-lg p-4 w-100 w-md-75 w-lg-45 user-card">
