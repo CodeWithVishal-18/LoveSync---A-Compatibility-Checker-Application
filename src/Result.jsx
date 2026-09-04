@@ -48,7 +48,6 @@ let Result = memo(() => {
 
     useEffect(() => {
         if (!state) return
-
         async function calculate() {
             let z1 = await getZodiacSign(state.p1Dob)
             let z2 = await getZodiacSign(state.p2Dob)
