@@ -45,7 +45,6 @@ let Result = memo(() => {
         Aquarius: "♒",
         Pisces: "♓"
     }
-
     useEffect(() => {
         if (!state) return
         async function calculate() {
