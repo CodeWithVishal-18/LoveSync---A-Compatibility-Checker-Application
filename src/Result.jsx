@@ -112,7 +112,7 @@ const Result = memo(() => {
 
   // Localhost detection
   const isLocal = useMemo(() => {
-    return typeof window !== 'undefined' && 
+    return typeof window !== 'undefined' &&
       (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
   }, []);
 
@@ -122,7 +122,7 @@ const Result = memo(() => {
 
     try {
       localStorage.setItem('loveSync_last_match', JSON.stringify(partnerData));
-    } catch (e) {}
+    } catch (e) { }
 
     // If loaded without query params, sync address bar so copying the URL works everywhere
     if (!searchParams.has('p1') && !searchParams.has('p1Name') && !searchParams.has('share')) {
@@ -468,16 +468,7 @@ const Result = memo(() => {
         </div>
 
         {/* Notice for local network testing */}
-        {isLocal && (
-          <div className="col-12 col-md-11 col-lg-10 col-xl-9 mx-auto mt-2">
-            <div
-              className="px-3 py-2 rounded-3 text-center small text-white-50"
-              style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px dashed rgba(255, 117, 151, 0.3)' }}
-            >
-              💡 <strong className="text-white">Testing across devices?</strong> Because you are running locally on <code>localhost</code>, other devices need your Wi-Fi network IP (e.g. <code>http://192.168.x.x:3000</code>) or a deployed site to reach this link!
-            </div>
-          </div>
-        )}
+
       </div>
 
       {/* MODE 1: CLASSIC VIEW */}
