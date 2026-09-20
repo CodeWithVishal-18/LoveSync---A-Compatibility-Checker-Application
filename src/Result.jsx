@@ -1,5 +1,5 @@
-import React, { memo, useEffect, useState, useMemo, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { memo, useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { Link, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { getZodiacSign, calculateZodiacSync } from './hooks/useZodiac';
 import { getCompatibility } from './hooks/compatibility';
 import { getNameMatchScore } from './hooks/nameMatch';
@@ -10,7 +10,7 @@ import html2canvas from 'html2canvas';
 
 // Clean React Icons
 import { FaWhatsapp, FaHeart, FaCalendarAlt, FaCrown, FaFire } from 'react-icons/fa';
-import { FiShare2, FiDownload, FiArrowLeft, FiSmartphone, FiCheck, FiRefreshCw } from 'react-icons/fi';
+import { FiShare2, FiDownload, FiArrowLeft, FiSmartphone, FiCheck, FiRefreshCw, FiCopy } from 'react-icons/fi';
 import { RiHeartsFill } from 'react-icons/ri';
 import { GiCrystalBall } from 'react-icons/gi';
 
@@ -30,7 +30,65 @@ const ZODIAC_ICONS = {
 };
 
 const Result = memo(() => {
-  const { state } = useLocation();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // Resolve partner details from location.state OR URL query params OR localStorage
+  const partnerData = useMemo(() => {
+    // 1. Direct location state (e.g. immediate navigation from Home)
+    if (location.state && location.state.p1Name && location.state.p2Name) {
+      return location.state;
+    }
+
+    // 2. Base64 token in ?share= or ?data=
+    const shareToken = searchParams.get('share') || searchParams.get('data');
+    if (shareToken) {
+      try {
+        const decoded = JSON.parse(decodeURIComponent(escape(atob(shareToken))));
+        if (decoded && decoded.p1Name && decoded.p2Name) {
+          return decoded;
+        }
+      } catch (e) {
+        console.warn('Failed to decode share token', e);
+      }
+    }
+
+    // 3. Query params: short (p1, d1, g1, p2, d2, g2) or full (p1Name, p1Dob, ...)
+    const p1Name = searchParams.get('p1') || searchParams.get('p1Name');
+    const p1Dob = searchParams.get('d1') || searchParams.get('p1Dob');
+    const p1Gender = searchParams.get('g1') || searchParams.get('p1Gender') || '';
+
+    const p2Name = searchParams.get('p2') || searchParams.get('p2Name');
+    const p2Dob = searchParams.get('d2') || searchParams.get('p2Dob');
+    const p2Gender = searchParams.get('g2') || searchParams.get('p2Gender') || '';
+
+    if (p1Name && p2Name) {
+      return {
+        p1Name: decodeURIComponent(p1Name),
+        p1Dob: p1Dob || '2000-01-01',
+        p1Gender: decodeURIComponent(p1Gender),
+        p2Name: decodeURIComponent(p2Name),
+        p2Dob: p2Dob || '2000-01-01',
+        p2Gender: decodeURIComponent(p2Gender),
+      };
+    }
+
+    // 4. Fallback to localStorage (e.g. refreshed page on the same browser)
+    try {
+      const cached = localStorage.getItem('loveSync_last_match');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && parsed.p1Name && parsed.p2Name) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      // Storage unavailable
+    }
+
+    return null;
+  }, [location.state, searchParams]);
 
   const [zodiac1, setZodiac1] = useState('');
   const [zodiac2, setZodiac2] = useState('');
@@ -49,31 +107,75 @@ const Result = memo(() => {
 
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(''), 3200);
+    setTimeout(() => setToastMessage(''), 3500);
   };
+
+  // Localhost detection
+  const isLocal = useMemo(() => {
+    return typeof window !== 'undefined' && 
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  }, []);
+
+  // Sync address bar URL and localStorage when valid data is present
+  useEffect(() => {
+    if (!partnerData) return;
+
+    try {
+      localStorage.setItem('loveSync_last_match', JSON.stringify(partnerData));
+    } catch (e) {}
+
+    // If loaded without query params, sync address bar so copying the URL works everywhere
+    if (!searchParams.has('p1') && !searchParams.has('p1Name') && !searchParams.has('share')) {
+      const q = new URLSearchParams({
+        p1: partnerData.p1Name,
+        d1: partnerData.p1Dob || '',
+        g1: partnerData.p1Gender || '',
+        p2: partnerData.p2Name,
+        d2: partnerData.p2Dob || '',
+        g2: partnerData.p2Gender || '',
+      });
+      navigate(`/result?${q.toString()}`, { replace: true, state: partnerData });
+    }
+  }, [partnerData, searchParams, navigate]);
+
+  // Build a complete shareable URL
+  const getShareableUrl = useCallback(() => {
+    if (!partnerData) return window.location.href;
+    const q = new URLSearchParams({
+      p1: partnerData.p1Name,
+      d1: partnerData.p1Dob || '',
+      g1: partnerData.p1Gender || '',
+      p2: partnerData.p2Name,
+      d2: partnerData.p2Dob || '',
+      g2: partnerData.p2Gender || '',
+    });
+
+    const cleanBaseUrl = window.location.href.split('?')[0];
+    return `${cleanBaseUrl}?${q.toString()}`;
+  }, [partnerData]);
 
   // Ship names
   const shipNames = useMemo(() => {
-    if (!state) return { primary: 'Lovebirds', secondary: 'Soulmates', all: [] };
-    return generateShipNames(state.p1Name, state.p2Name);
-  }, [state]);
+    if (!partnerData) return { primary: 'Lovebirds', secondary: 'Soulmates', all: [] };
+    return generateShipNames(partnerData.p1Name, partnerData.p2Name);
+  }, [partnerData]);
 
   // Initial calculation
   useEffect(() => {
-    if (!state) return;
+    if (!partnerData) return;
     let isMounted = true;
 
     async function calculate() {
-      const fallbackZ1 = calculateZodiacSync(state.p1Dob)?.sign || 'Aries';
-      const fallbackZ2 = calculateZodiacSync(state.p2Dob)?.sign || 'Aries';
+      const fallbackZ1 = calculateZodiacSync(partnerData.p1Dob)?.sign || 'Aries';
+      const fallbackZ2 = calculateZodiacSync(partnerData.p2Dob)?.sign || 'Aries';
 
       let z1 = fallbackZ1;
       let z2 = fallbackZ2;
 
       try {
         const [fetchedZ1, fetchedZ2] = await Promise.all([
-          getZodiacSign(state.p1Dob),
-          getZodiacSign(state.p2Dob),
+          getZodiacSign(partnerData.p1Dob),
+          getZodiacSign(partnerData.p2Dob),
         ]);
         if (fetchedZ1) z1 = fetchedZ1;
         if (fetchedZ2) z2 = fetchedZ2;
@@ -96,19 +198,19 @@ const Result = memo(() => {
     return () => {
       isMounted = false;
     };
-  }, [state]);
+  }, [partnerData]);
 
   // Scores calculation
   const { finalScore, nameScore, dobScore, vibeBadge, romanticMessage } = useMemo(() => {
-    if (!state || !zodiacResult) {
+    if (!partnerData || !zodiacResult) {
       return { finalScore: 0, nameScore: 0, dobScore: 0, vibeBadge: {}, romanticMessage: '' };
     }
 
-    const nScore = getNameMatchScore(state.p1Name, state.p2Name);
-    const dScore = getDobMatchScore(state.p1Dob, state.p2Dob);
+    const nScore = getNameMatchScore(partnerData.p1Name, partnerData.p2Name);
+    const dScore = getDobMatchScore(partnerData.p1Dob, partnerData.p2Dob);
     const base = Math.round(nScore * 0.3 + dScore * 0.2 + (zodiacResult.score || 75) * 0.5);
 
-    const combinedLength = (state.p1Name + state.p2Name).length;
+    const combinedLength = (partnerData.p1Name + partnerData.p2Name).length;
     const offset = ((combinedLength * 7) % 11) - 5;
     const computedFinal = Math.min(100, Math.max(20, base + offset));
 
@@ -139,7 +241,7 @@ const Result = memo(() => {
       vibeBadge: badge,
       romanticMessage: message,
     };
-  }, [state, zodiacResult]);
+  }, [partnerData, zodiacResult]);
 
   // Smooth counter animation whenever viewMode changes or calculation finishes
   useEffect(() => {
@@ -197,48 +299,65 @@ const Result = memo(() => {
     }
   };
 
-  // WhatsApp Share
+  // WhatsApp Share with full clickable URL
   const handleWhatsAppShare = () => {
+    if (!partnerData) return;
+    const shareUrl = getShareableUrl();
     const shareText = `💖 *LoveSync Match Result*\n\n` +
-      `💑 *${state.p1Name}* + *${state.p2Name}*\n` +
+      `💑 *${partnerData.p1Name}* + *${partnerData.p2Name}*\n` +
       `🔥 *Compatibility Score:* ${finalScore}%\n` +
       `💍 *Ship Name:* ${shipNames.primary}\n` +
       `👑 *Vibe:* ${vibeBadge.text}\n\n` +
+      `✨ *Open our full compatibility card here:*\n${shareUrl}\n\n` +
       `Check your relationship & zodiac compatibility on LoveSync!`;
 
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
     window.open(url, '_blank');
+
+    if (isLocal) {
+      showToast('Opening WhatsApp! (Note: local links need your network IP for other devices)');
+    }
+  };
+
+  // Direct 1-Click Copy Link
+  const handleCopyLink = async () => {
+    const shareUrl = getShareableUrl();
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      if (isLocal) {
+        showToast('Link copied! 📋 (On localhost, other devices need your Wi-Fi IP)');
+      } else {
+        showToast('Share link copied to clipboard! 📋');
+      }
+    } catch (err) {
+      showToast('Could not copy link to clipboard.');
+    }
   };
 
   // Native Web Share or Copy Link
   const handleShareOrCopy = async () => {
-    const shareData = {
-      title: 'LoveSync Compatibility Result',
-      text: `${state.p1Name} + ${state.p2Name} are a ${finalScore}% match (${shipNames.primary})! Check your compatibility on LoveSync.`,
-      url: window.location.href,
-    };
+    if (!partnerData) return;
+    const shareUrl = getShareableUrl();
+    const shareText = `💖 ${partnerData.p1Name} + ${partnerData.p2Name} scored ${finalScore}% on LoveSync (${shipNames.primary})! View our full match card: ${shareUrl}`;
 
     if (navigator.share) {
       try {
-        await navigator.share(shareData);
-        showToast('Shared successfully!');
+        await navigator.share({
+          title: `LoveSync: ${partnerData.p1Name} + ${partnerData.p2Name}`,
+          text: shareText,
+          url: shareUrl,
+        });
+        showToast('Shared successfully! 💖');
         return;
       } catch (err) {
-        // Fallback to clipboard
+        if (err.name === 'AbortError') return;
       }
     }
 
-    try {
-      await navigator.clipboard.writeText(
-        `${state.p1Name} + ${state.p2Name} scored ${finalScore}% on LoveSync! Couple Nickname: ${shipNames.primary}`
-      );
-      showToast('Result copied to clipboard! 📋');
-    } catch (err) {
-      showToast('Could not copy to clipboard.');
-    }
+    handleCopyLink();
   };
 
-  if (!state) {
+  if (!partnerData) {
     return (
       <div className="container px-3 text-center py-5">
         <div className="glass-panel p-4 p-md-5 mx-auto" style={{ maxWidth: '500px' }}>
@@ -314,9 +433,18 @@ const Result = memo(() => {
             </button>
 
             <button
+              onClick={handleCopyLink}
+              className="btn btn-love-outline btn-sm d-inline-flex align-items-center gap-1 px-3 py-2"
+              title="Copy share link"
+            >
+              <FiCopy />
+              <span>Copy Link</span>
+            </button>
+
+            <button
               onClick={handleShareOrCopy}
               className="btn btn-love-outline btn-sm d-inline-flex align-items-center gap-1 px-3 py-2"
-              title="Copy or Native Share"
+              title="Share via device options"
             >
               <FiShare2 />
               <span>Share</span>
@@ -338,6 +466,18 @@ const Result = memo(() => {
             </button>
           </div>
         </div>
+
+        {/* Notice for local network testing */}
+        {isLocal && (
+          <div className="col-12 col-md-11 col-lg-10 col-xl-9 mx-auto mt-2">
+            <div
+              className="px-3 py-2 rounded-3 text-center small text-white-50"
+              style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px dashed rgba(255, 117, 151, 0.3)' }}
+            >
+              💡 <strong className="text-white">Testing across devices?</strong> Because you are running locally on <code>localhost</code>, other devices need your Wi-Fi network IP (e.g. <code>http://192.168.x.x:3000</code>) or a deployed site to reach this link!
+            </div>
+          </div>
+        )}
       </div>
 
       {/* MODE 1: CLASSIC VIEW */}
@@ -362,7 +502,7 @@ const Result = memo(() => {
               <div className="row align-items-center my-3 my-md-4 py-2 g-2">
                 <div className="col-5 text-end">
                   <h3 className="fw-bold mb-1 fs-5 fs-sm-4 fs-md-3 text-truncate text-white">
-                    {state.p1Name}
+                    {partnerData.p1Name}
                   </h3>
                   <div
                     className="d-inline-flex align-items-center gap-1 text-pink small px-2 py-1 rounded"
@@ -381,7 +521,7 @@ const Result = memo(() => {
 
                 <div className="col-5 text-start">
                   <h3 className="fw-bold mb-1 fs-5 fs-sm-4 fs-md-3 text-truncate text-white">
-                    {state.p2Name}
+                    {partnerData.p2Name}
                   </h3>
                   <div
                     className="d-inline-flex align-items-center gap-1 text-pink small px-2 py-1 rounded"
@@ -532,7 +672,7 @@ const Result = memo(() => {
 
                 {/* Names */}
                 <h2 className="fw-bold fs-3 mb-1 text-white text-truncate px-2">
-                  {state.p1Name} & {state.p2Name}
+                  {partnerData.p1Name} & {partnerData.p2Name}
                 </h2>
 
                 {/* Zodiac signs */}

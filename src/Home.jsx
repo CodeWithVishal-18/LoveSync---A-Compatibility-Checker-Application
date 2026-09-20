@@ -52,7 +52,22 @@ const Home = memo(() => {
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
   const onSubmit = (data) => {
-    navigate('/result', { state: data });
+    const params = new URLSearchParams({
+      p1: data.p1Name || '',
+      d1: data.p1Dob || '',
+      g1: data.p1Gender || '',
+      p2: data.p2Name || '',
+      d2: data.p2Dob || '',
+      g2: data.p2Gender || '',
+    });
+
+    try {
+      localStorage.setItem('loveSync_last_match', JSON.stringify(data));
+    } catch (e) {
+      // LocalStorage error fallback
+    }
+
+    navigate(`/result?${params.toString()}`, { state: data });
   };
 
   const handleQuickFill = () => {
