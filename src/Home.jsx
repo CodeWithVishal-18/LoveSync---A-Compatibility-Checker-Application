@@ -179,7 +179,6 @@ const Home = memo(() => {
                   </div>
                 </div>
 
-                {/* Person 2 Details */}
                 <div className="col-12 col-md-6 d-flex">
                   <div className="partner-card-sub flex-fill w-100 p-3 p-lg-3 d-flex flex-column">
                     <div className="d-flex align-items-center justify-content-between mb-2" style={{ minHeight: '28px' }}>
@@ -252,8 +251,6 @@ const Home = memo(() => {
                   </div>
                 </div>
               </div>
-
-              {/* Action Buttons */}
               <div className="d-grid gap-1 gap-md-2 mt-1">
                 <button type="submit" className="btn btn-love-primary py-2 px-3 fs-6 fw-semibold d-flex align-items-center justify-content-center gap-2">
                   <FaHeart className="fs-6" />
